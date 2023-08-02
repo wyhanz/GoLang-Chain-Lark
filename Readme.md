@@ -4,6 +4,8 @@
 
 Welcome to GoLang-Chain-Lark! This repository is my personal exploration into the world of Golang, Langchain, and AI agents. Through this project, I've implemented a Lark Suite Robot🤖️ as a means to delve deeper into these topics. While it serves as a foundational starting point for further expansions and integrations, it's primarily a space for learning and experimentation.
 
+![example](/docs/WechatIMG8.jpg)
+
 ## Features 🌟
 
 - LLM Integration 🧠: As part of my study, I've integrated the llama2-chat-13b model via text-generation-inference. This has allowed me to experience firsthand the improvements in throughput and responsiveness over standard loading.
