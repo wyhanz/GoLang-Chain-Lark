@@ -60,7 +60,7 @@ func main() {
 	g.POST("/webhook/card", sdkginext.NewCardActionHandlerFunc(cardHandler))
 
 	// 启动服务
-	err := g.Run(":9999")
+	err := g.Run(":9998")
 	if err != nil {
 		panic(err)
 	}
