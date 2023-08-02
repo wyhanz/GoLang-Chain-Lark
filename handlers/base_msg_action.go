@@ -97,7 +97,8 @@ type EasyInfer struct {
 
 func (ei *EasyInfer) Execute(a *ActionInfo) bool {
 	fmt.Println(a.info.prompt)
-	inferRes := a.handler.generatedAgent.InferTgi(a.info.prompt, "http://157.148.7.64:38880/generate")
+	url := fmt.Sprintf("%s/generate", a.handler.config.LlamaUrl)
+	inferRes := a.handler.generatedAgent.InferTgi(a.info.prompt, url)
 	fmt.Println(inferRes.Answer)
 	replyMsg(*a.ctx, inferRes.Answer, a.info.msgId)
 	return true
