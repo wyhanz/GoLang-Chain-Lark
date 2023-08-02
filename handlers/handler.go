@@ -31,6 +31,7 @@ type MessageHandler struct {
 
 func (m MessageHandler) msgReceivedHandler(ctx context.Context, event *larkim.P2MessageReceiveV1) error {
 	logger.Debug("收到消息：", larkcore.Prettify(event.Event.Message))
+	fmt.Println(larkcore.Prettify(event.Event.Message))
 
 	msgType, _ := judgeMessageType(event)
 	content := event.Event.Message.Content
