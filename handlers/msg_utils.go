@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"path/filepath"
 	"regexp"
+	"strings"
+
+	"gongsheng.cn/agent/global"
 )
 
 func msgFilter(msg string) string {
@@ -49,7 +52,7 @@ func parseFileKey(content string) string {
 	return fileKey
 }
 
-func judgeIfLarkWiki(url string) (string, string, bool) {
+func judgeIfLarkWiki(url string) (string, string, int) {
 	var newPrompt string
 	re := regexp.MustCompile(`https?://[^\s/]+\.feishu\.cn/.+/([^/]+)$`)
 	match := re.FindStringSubmatch(url)
@@ -58,7 +61,11 @@ func judgeIfLarkWiki(url string) (string, string, bool) {
 		if len(match[1]) > 27 { //27, magic number rep. token length
 			newPrompt += match[1][27:]
 		}
-		return match[1][:27], newPrompt, true
+		if strings.Contains(url, "wiki") {
+			return match[1][:27], newPrompt, global.WIKI_LARK
+		} else if strings.Contains(url, "docx") {
+			return match[1][:27], newPrompt, global.DOCS_LARK
+		}
 	}
-	return "Pattern not matched", url, false
+	return "Pattern not matched", url, global.TEXT_LARK
 }
