@@ -66,6 +66,7 @@ func (m MessageHandler) msgReceivedHandler(ctx context.Context, event *larkim.P2
 		&ProcessedUniqueAction{},
 		&ProcessExternalFile{},
 		&ProcessRootMsg{},
+		&ProcessLarkWiki{},
 		&EasyPrompt{},
 		&EasyInfer{},
 	}
