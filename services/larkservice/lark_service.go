@@ -53,7 +53,7 @@ func GetLarkClientMsg(msgId string) (map[string]interface{}, error) {
 		return nil, nil
 	}
 
-	res := getLarkBody(respMap)
+	res := respMap["data"].(map[string]interface{})["items"].([]interface{})[0].(map[string]interface{})["body"].(map[string]interface{})
 	return res, err
 }
 
@@ -136,7 +136,7 @@ func GetLarkWikiInfo(wikiId string) (string, error) {
 	return objToken, nil
 }
 
-func getLarkBody(respMap map[string]interface{}) map[string]interface{} {
-	res := respMap["data"].(map[string]interface{})["items"].([]interface{})[0].(map[string]interface{})["body"].(map[string]interface{})
-	return res
-}
+// func getLarkBody(respMap map[string]interface{}) map[string]interface{} {
+// 	res := r
+// 	return res
+// }

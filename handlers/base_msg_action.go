@@ -74,7 +74,7 @@ func (pr *ProcessRootMsg) Execute(a *ActionInfo) bool {
 			return true
 		}
 
-		if content["msgtype"].(string) == "file" {
+		if content["content"].(string) == "file" {
 			fileKey := parseFileKey(content["content"].(string))
 			if fileKey != "" {
 				a.info.fileKey = fileKey
