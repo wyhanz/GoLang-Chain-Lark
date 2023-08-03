@@ -53,7 +53,7 @@ func GetLarkClientMsg(msgId string) (map[string]interface{}, error) {
 		return nil, nil
 	}
 
-	res := respMap["data"].(map[string]interface{})["items"].([]interface{})[0].(map[string]interface{})["body"].(map[string]interface{})
+	res := respMap["data"].(map[string]interface{})["items"].([]interface{})[0].(map[string]interface{})
 	return res, err
 }
 
