@@ -60,13 +60,36 @@ type ProcessRootMsg struct {
 
 func (pr *ProcessRootMsg) Execute(a *ActionInfo) bool {
 	if *a.info.sessionId != *a.info.msgId {
-		content, _ := larkservice.GetLarkClientMsg(*a.info.sessionId)
-		fileKey := parseFileKey(content)
-		if fileKey != "" {
-			a.info.fileKey = fileKey
-			a.info.msgType = "post"
+		content, err := larkservice.GetLarkClientMsg(*a.info.sessionId)
+		if err != nil {
+			fmt.Println("Get Msg Failed %s", err)
 			return true
 		}
+
+		if content["msgtype"].(string) == "file" {
+			fileKey := parseFileKey(content["content"].(string))
+			if fileKey != "" {
+				a.info.fileKey = fileKey
+				a.info.msgType = "root_file" //处理标识
+				return true
+			}
+		}
+	}
+	return true
+}
+
+type ProcessLarkWiki struct {
+}
+
+// Need careful consideration and construction
+func (pl *ProcessLarkWiki) Execute(a *ActionInfo) bool {
+	// 判断是否是飞书云文档
+	fileToken, processedPrompt, isLarkWiki := judgeIfLarkWiki(a.info.prompt)
+	if isLarkWiki {
+		a.info.msgType = "lark_file"
+		a.info.fileKey = fileToken
+		a.info.prompt = processedPrompt
+		return true
 	}
 	return true
 }
@@ -77,7 +100,7 @@ type EasyPrompt struct {
 func (ep *EasyPrompt) Execute(a *ActionInfo) bool {
 	if a.info.msgType == "text" {
 		a.info.prompt, _ = llama.BuildPrompt(a.info.prompt)
-	} else {
+	} else if a.info.msgType == "root_file" {
 		if a.info.fileKey != "" {
 			// 取根节点的文件
 			binaryTxT, err := larkservice.GetLarkClientFile(a.info.fileKey, *a.info.sessionId)
@@ -88,6 +111,14 @@ func (ep *EasyPrompt) Execute(a *ActionInfo) bool {
 			fileContent := string(binaryTxT)
 			a.info.prompt, _ = llama.BuileFilePrompt(a.info.prompt, fileContent)
 		}
+	} else if a.info.msgType == "lark_file" {
+		wikiContent, err := larkservice.GetLarkWikiContent(a.info.fileKey)
+		if err != nil {
+			replyMsg(*a.ctx, fmt.Sprintf("无法获取所提供的wiki, 这可能是因为机器人没有阅读你文档的权限～, %s", err), a.info.msgId)
+			return false
+		}
+		fmt.Println(wikiContent)
+		a.info.prompt, _ = llama.BuileFilePrompt(a.info.prompt, wikiContent)
 	}
 	return true
 }
