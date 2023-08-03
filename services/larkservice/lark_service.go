@@ -8,6 +8,7 @@ import (
 
 	larkdocx "github.com/larksuite/oapi-sdk-go/v3/service/docx/v1"
 	larkim "github.com/larksuite/oapi-sdk-go/v3/service/im/v1"
+	larkwiki "github.com/larksuite/oapi-sdk-go/v3/service/wiki/v2"
 	"gongsheng.cn/agent/initialization"
 )
 
@@ -56,7 +57,7 @@ func GetLarkClientMsg(msgId string) (map[string]interface{}, error) {
 	return res, err
 }
 
-func GetLarkWikiContent(docId string) (string, error) {
+func GetLarkDocsContent(docId string) (string, error) {
 	client := initialization.GetLarkClient()
 
 	req := larkdocx.NewRawContentDocumentReqBuilder().
@@ -85,6 +86,54 @@ func GetLarkWikiContent(docId string) (string, error) {
 	// code :=
 	res := respMap["data"].(map[string]interface{})["content"].(string)
 	return res, nil
+}
+
+func GetLarkWikiContent(wikiId string) (string, error) {
+	var (
+		nodeId  string
+		content string
+	)
+	var err error
+	if nodeId, err = GetLarkWikiInfo(wikiId); err != nil {
+		return "", err
+	}
+	if content, err = GetLarkDocsContent(nodeId); err != nil {
+		return "", err
+	}
+
+	return content, err
+}
+
+func GetLarkWikiInfo(wikiId string) (string, error) {
+	client := initialization.GetLarkClient()
+
+	req := larkwiki.NewGetNodeSpaceReqBuilder().
+		Token(wikiId).
+		Build()
+
+	resp, err := client.Wiki.Space.GetNode(context.Background(), req)
+
+	if err != nil {
+		fmt.Println(err)
+		return "", err
+	}
+
+	// 服务端错误处理
+	if !resp.Success() {
+		fmt.Println(resp.Code, resp.Msg, resp.RequestId())
+		return "", err
+	}
+	var respMap map[string]interface{}
+	err = json.Unmarshal(resp.RawBody, &respMap)
+	if err != nil {
+		return "", err
+	}
+	objToken := respMap["data"].(map[string]interface{})["node"].(map[string]interface{})["obj_token"].(string)
+	objType := respMap["data"].(map[string]interface{})["node"].(map[string]interface{})["obj_type"].(string)
+	if objType != "docx" {
+		return "", fmt.Errorf("不太支持除docx外，其他格式文档")
+	}
+	return objToken, nil
 }
 
 func getLarkBody(respMap map[string]interface{}) map[string]interface{} {

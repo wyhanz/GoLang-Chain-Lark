@@ -5,9 +5,17 @@ import (
 	"fmt"
 
 	larkim "github.com/larksuite/oapi-sdk-go/v3/service/im/v1"
+	"gongsheng.cn/agent/global"
 	"gongsheng.cn/agent/services/larkservice"
 	"gongsheng.cn/agent/services/llama"
 )
+
+var MsgTypeMapper = map[int]string{
+	global.TEXT_LARK: "text",
+	global.FILE_LARK: "file",
+	global.DOCS_LARK: "lark_docs",
+	global.WIKI_LARK: "lark_wiki",
+}
 
 type MsgInfo struct {
 	msgType   string
@@ -84,9 +92,9 @@ type ProcessLarkWiki struct {
 // Need careful consideration and construction
 func (pl *ProcessLarkWiki) Execute(a *ActionInfo) bool {
 	// 判断是否是飞书云文档
-	fileToken, processedPrompt, isLarkWiki := judgeIfLarkWiki(a.info.prompt)
-	if isLarkWiki {
-		a.info.msgType = "lark_file"
+	fileToken, processedPrompt, LarkMsgNum := judgeIfLarkWiki(a.info.prompt)
+	if LarkMsgNum != 0 {
+		a.info.msgType = MsgTypeMapper[LarkMsgNum]
 		a.info.fileKey = fileToken
 		a.info.prompt = processedPrompt
 		return true
@@ -111,8 +119,15 @@ func (ep *EasyPrompt) Execute(a *ActionInfo) bool {
 			fileContent := string(binaryTxT)
 			a.info.prompt, _ = llama.BuileFilePrompt(a.info.prompt, fileContent)
 		}
-	} else if a.info.msgType == "lark_file" {
-		wikiContent, err := larkservice.GetLarkWikiContent(a.info.fileKey)
+	} else if a.info.msgType == "lark_docs" || a.info.msgType == "lark_wiki" {
+		var wikiContent string
+		var err error
+		if a.info.msgType == "lark_docs" {
+			wikiContent, err = larkservice.GetLarkDocsContent(a.info.fileKey)
+		} else {
+			wikiContent, err = larkservice.GetLarkWikiContent(a.info.fileKey)
+		}
+
 		if err != nil {
 			replyMsg(*a.ctx, fmt.Sprintf("无法获取所提供的wiki, 这可能是因为机器人没有阅读你文档的权限～, %s", err), a.info.msgId)
 			return false
