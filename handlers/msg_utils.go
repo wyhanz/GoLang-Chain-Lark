@@ -48,3 +48,17 @@ func parseFileKey(content string) string {
 	fileKey := contentMap["file_key"].(string)
 	return fileKey
 }
+
+func judgeIfLarkWiki(url string) (string, string, bool) {
+	var newPrompt string
+	re := regexp.MustCompile(`https?://[^\s/]+\.feishu\.cn/.+/([^/]+)$`)
+	match := re.FindStringSubmatch(url)
+	if len(match) == 2 {
+		newPrompt = re.ReplaceAllString(url, "")
+		if len(match[1]) > 27 { //27, magic number rep. token length
+			newPrompt += match[1][27:]
+		}
+		return match[1][:27], newPrompt, true
+	}
+	return "Pattern not matched", url, false
+}
