@@ -34,10 +34,12 @@ func BuileFilePrompt(msg, fileContent string) (string, error) {
 		global.FILE_SYSTEM_PROMPT,
 		global.FILE_EXAMPLE,
 		global.E_SYS,
+		global.USER,
+		msg,
 		global.B_FILE,
 		fileContent,
 		global.E_FILE,
-		msg,
+		global.ANS,
 		global.E_INST,
 	}
 	prompt := constructPromptChain(prompts)
