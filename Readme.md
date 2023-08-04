@@ -2,6 +2,8 @@
     <span>GoLang-Chain-Lark</span>
 </h1>
 
+[[简体中文]](/Readmezh.md)
+
 Welcome to GoLang-Chain-Lark! This repository is my personal exploration into the world of Golang, Langchain, and AI agents. Through this project, I've implemented a Lark Suite Robot🤖️ as a means to delve deeper into these topics. While it serves as a foundational starting point for further expansions and integrations, it's primarily a space for learning and experimentation.
 
 ## Features 🌟
