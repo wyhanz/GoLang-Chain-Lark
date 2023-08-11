@@ -15,6 +15,13 @@ import (
 func replyMsg(ctx context.Context, msg string, msgId *string) error {
 	client := initialization.GetLarkClient()
 	msg = utils.EscapeJsonChars(msg)
+	// encoded, err := json.Marshal(msg)
+	// if err != nil {
+	// 	fmt.Println("Error:", err)
+	// 	return err
+	// }
+	// msg = string(encoded)
+	fmt.Println("------------:\n", msg)
 	content := larkim.NewTextMsgBuilder().
 		Text(msg).
 		Build()

@@ -2,6 +2,7 @@ package llama
 
 import (
 	"bytes"
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -22,45 +23,46 @@ func constructPromptChain(prompts []string) string {
 
 func BuildPrompt(msg string) (string, error) {
 	//目前先做单轮prompt构成
-	prompt := global.B_INST + global.B_SYS + global.DEFAULT_SYSTEM_PROMPT + global.E_SYS + msg + global.E_INST
+	prompt := msg + "[SPLIT]"
 
 	return prompt, nil
 }
 
 func BuileFilePrompt(msg, fileContent string) (string, error) {
 	prompts := []string{
-		global.B_INST,
-		global.B_SYS,
-		global.FILE_SYSTEM_PROMPT,
-		global.FILE_EXAMPLE,
-		global.E_SYS,
-		global.USER,
 		msg,
-		global.B_FILE,
+		"[SPLIT]",
 		fileContent,
-		global.E_FILE,
-		global.ANS,
-		global.E_INST,
 	}
 	prompt := constructPromptChain(prompts)
 	return prompt, nil
 }
 
+func promptSpliter(msg string) (string, string, error) {
+	parts := strings.Split(msg, "[SPLIT]")
+
+	return parts[0], parts[1], nil
+}
+
 func (ir *InferReq) InferTgi(msg, url string) *InferResTgi {
 	timeOutDuration := time.Duration(global.INFER_TIME_REQ) * time.Second
 	ir.Client = &http.Client{Timeout: timeOutDuration}
+	prompt, content, _ := promptSpliter(msg)
 	requestBody := TgiPayload{
-		Inputs: msg,
-		Paras: map[string]int{
-			"max_new_tokens": 256,
-		},
+		Inputs:  prompt,
+		Content: content,
+		// Paras: map[string]int{
+		// 	"max_new_tokens": 256,
+		// },
 	}
-	responseBody := &InferResTgi{}
+	responseBody := &InferResCode{}
+	returnRes := &InferResTgi{}
 	err := ir.sendReqWithRetry(url, requestBody, responseBody, ir.Client, 3)
 	if err != nil {
 		fmt.Printf("error when sending req, %s", err)
 	}
-	return responseBody
+	returnRes.Answer = responseBody.Answers[0]["text"].(string)
+	return returnRes
 }
 
 func (ir *InferReq) sendReqWithRetry(url string,
@@ -86,9 +88,12 @@ func (ir *InferReq) sendReqWithRetry(url string,
 		if retry > 0 {
 			req.Body = io.NopCloser(bytes.NewReader(requestBodyData))
 		}
+
+		http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
+
 		response, err = client.Do(req)
 		if err != nil || response.StatusCode < 200 || response.StatusCode >= 300 {
-
+			fmt.Println(err)
 			body, _ := io.ReadAll(response.Body)
 			fmt.Println("body", string(body))
 

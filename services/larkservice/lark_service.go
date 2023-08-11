@@ -135,8 +135,3 @@ func GetLarkWikiInfo(wikiId string) (string, error) {
 	}
 	return objToken, nil
 }
-
-// func getLarkBody(respMap map[string]interface{}) map[string]interface{} {
-// 	res := r
-// 	return res
-// }

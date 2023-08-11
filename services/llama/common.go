@@ -9,10 +9,15 @@ type InferReq struct {
 }
 
 type TgiPayload struct {
-	Inputs string         `json:"inputs"`
-	Paras  map[string]int `json:"parameters"`
+	Inputs  string `json:"prompt"`
+	Content string `json:"context"`
+	// Paras  map[string]int `json:"parameters"`
 }
 
 type InferResTgi struct {
 	Answer string `json:"generated_text"`
+}
+
+type InferResCode struct {
+	Answers []map[string]interface{} `json:"results"`
 }
